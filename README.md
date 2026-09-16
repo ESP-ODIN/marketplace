@@ -1,7 +1,7 @@
-# marketplace
+#agent
 
-### Prerequisites
-- **Go** (version 1.20 or later):
+## Prerequisites
+- **Go** (version 1.22 or later required for standard `net/http` method-based routing):
   - **Linux (Ubuntu/Debian):**
     ```bash
     sudo apt update && sudo apt install -y golang-go
@@ -30,3 +30,10 @@
     sudo apt install -y make
     ```
 
+---
+
+### Environment Setup
+
+1. At the root of the project, duplicate the example file to create your local `.env` file[cite: 1]:
+   ```bash
+   cp .env.exemple .env
