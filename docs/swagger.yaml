@@ -1,0 +1,132 @@
+basePath: /api/v1
+definitions:
+  dto.AgentListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Agent'
+        type: array
+    type: object
+  dto.CreateAgentRequest:
+    properties:
+      agent_type:
+        maxLength: 255
+        type: string
+      category:
+        maxLength: 255
+        type: string
+      creator_id:
+        type: string
+      description:
+        type: string
+      name:
+        maxLength: 255
+        minLength: 3
+        type: string
+      readme_markdown:
+        type: string
+      runtime:
+        maxLength: 255
+        type: string
+    required:
+    - agent_type
+    - category
+    - creator_id
+    - name
+    - runtime
+    type: object
+  dto.ErrorResponse:
+    properties:
+      details:
+        example: Le champ name est obligatoire
+        type: string
+      error:
+        example: Données invalides
+        type: string
+    type: object
+  dto.SingleAgentResponse:
+    properties:
+      data:
+        $ref: '#/definitions/model.Agent'
+    type: object
+  model.Agent:
+    properties:
+      agent_type:
+        type: string
+      category:
+        type: string
+      created_at:
+        type: string
+      creator_id:
+        type: string
+      description:
+        type: string
+      downloads_count:
+        type: integer
+      id:
+        type: string
+      is_official_pick:
+        type: boolean
+      name:
+        type: string
+      readme_markdown:
+        type: string
+      runtime:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API backend pour la marketplace Odin.
+  title: Marketplace API
+  version: "1.0"
+paths:
+  /agents:
+    get:
+      description: Récupère la liste de tous les agents enregistrés
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AgentListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Lister les agents
+      tags:
+      - agents
+    post:
+      consumes:
+      - application/json
+      description: Enregistre un nouvel agent sur la marketplace
+      parameters:
+      - description: Informations de l'agent
+        in: body
+        name: agent
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAgentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.SingleAgentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Créer un agent
+      tags:
+      - agents
+swagger: "2.0"

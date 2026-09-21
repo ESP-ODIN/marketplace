@@ -18,6 +18,14 @@ func NewAgentHandler(agentService service.AgentService) *AgentHandler {
 	return &AgentHandler{agentService: agentService}
 }
 
+// GetAll godoc
+// @Summary      Lister les agents
+// @Description  Récupère la liste de tous les agents enregistrés
+// @Tags         agents
+// @Produce      json
+// @Success      200  {object}  dto.AgentListResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /agents [get]
 func (h *AgentHandler) GetAll(c *gin.Context) {
 	agents, err := h.agentService.GetAllAgents(c.Request.Context())
 	if err != nil {
@@ -35,6 +43,17 @@ func (h *AgentHandler) GetAll(c *gin.Context) {
 	})
 }
 
+// Create godoc
+// @Summary      Créer un agent
+// @Description  Enregistre un nouvel agent sur la marketplace
+// @Tags         agents
+// @Accept       json
+// @Produce      json
+// @Param        agent  body      dto.CreateAgentRequest  true  "Informations de l'agent"
+// @Success      201    {object}  dto.SingleAgentResponse
+// @Failure      400    {object}  dto.ErrorResponse
+// @Failure      500    {object}  dto.ErrorResponse
+// @Router       /agents [post]
 func (h *AgentHandler) Create(c *gin.Context) {
 	var req dto.CreateAgentRequest
 
