@@ -1,6 +1,10 @@
 package dto
 
 import (
+	"time"
+
+	"marketplace/internal/model"
+
 	"github.com/google/uuid"
 )
 
@@ -25,6 +29,33 @@ type AgentResponse struct {
 	ReadmeMarkdown *string   `json:"readme_markdown,omitempty"`
 	IsOfficialPick bool      `json:"is_official_pick"`
 	DownloadsCount int       `json:"downloads_count"`
-	CreatedAt      string    `json:"created_at"`
-	UpdatedAt      string    `json:"updated_at"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+}
+
+// ToAgentResponse mappe un model.Agent vers un dto.AgentResponse
+func ToAgentResponse(a model.Agent) AgentResponse {
+	return AgentResponse{
+		ID:             a.ID,
+		Name:           a.Name,
+		CreatorID:      a.CreatorID,
+		Category:       a.Category,
+		AgentType:      a.AgentType,
+		Runtime:        a.Runtime,
+		Description:    a.Description,
+		ReadmeMarkdown: a.ReadmeMarkdown,
+		IsOfficialPick: a.IsOfficialPick,
+		DownloadsCount: a.DownloadsCount,
+		CreatedAt:      a.CreatedAt,
+		UpdatedAt:      a.UpdatedAt,
+	}
+}
+
+// ToAgentResponseList mappe un slice de model.Agent vers un slice de dto.AgentResponse
+func ToAgentResponseList(agents []model.Agent) []AgentResponse {
+	res := make([]AgentResponse, len(agents))
+	for i, a := range agents {
+		res[i] = ToAgentResponse(a)
+	}
+	return res
 }
