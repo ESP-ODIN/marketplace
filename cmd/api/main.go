@@ -2,61 +2,48 @@ package main
 
 import (
 	"context"
-	"errors"
-	"log/slog"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
+	"fmt"
+	"log"
 	"time"
+
 	"marketplace/config"
+	"marketplace/db"
+	"marketplace/internal/handler"
+	"marketplace/internal/repository"
+	"marketplace/internal/router"
+	"marketplace/internal/service"
 )
 
 func main() {
-	if err := run(); err != nil {
-		slog.Error("API stopped", "error", err)
-		os.Exit(1)
-	}
-}
-
-func run() error {
 	cfg, err := config.Load()
 	if err != nil {
-		return err
+		log.Fatalf("Erreur de configuration : %v", err)
 	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	server := &http.Server{
-		Addr:              cfg.HTTPAddr,
-		Handler:           routes(),
-		ReadHeaderTimeout: 5 * time.Second,
-		ReadTimeout:       15 * time.Second,
-		WriteTimeout:      15 * time.Second,
-		IdleTimeout:       60 * time.Second,
-	}
-	listener, err := net.Listen("tcp", cfg.HTTPAddr)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pool, err := db.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		return err
+		log.Fatalf("Erreur de connexion : %v", err)
 	}
-	serveErr := make(chan error, 1)
-	go func() { serveErr <- server.Serve(listener) }()
-	slog.Info("API listening", "address", listener.Addr().String())
-	select {
-	case err := <-serveErr:
-		if errors.Is(err, http.ErrServerClosed) {
-			return nil
-		}
-		return err
-	case <-ctx.Done():
-		stop()
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		if err := server.Shutdown(shutdownCtx); err != nil {
-			_ = server.Close()
-			return err
-		}
-		slog.Info("API stopped")
-		return nil
+	defer pool.Close()
+
+	agentRepo := repository.NewAgentRepository(pool)
+	agentService := service.NewAgentService(agentRepo)
+
+	r := router.Setup(router.Config{
+		HealthHandler: handler.NewHealthHandler(pool),
+		AgentHandler:  handler.NewAgentHandler(agentService),
+	})
+
+	addr := ":8080"
+	if cfg.Port != "" {
+		addr = ":" + cfg.Port
+	}
+
+	fmt.Printf("🚀 Serveur démarré sur http://localhost%s\n", addr)
+	if err := r.Run(addr); err != nil {
+		log.Fatalf("Erreur serveur : %v", err)
 	}
 }

@@ -2,27 +2,31 @@ package config
 
 import (
 	"fmt"
-	"net"
 	"os"
-	"strconv"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	HTTPAddr string
+	DatabaseURL string
+	Port        string
 }
 
-func Load() (Config, error) {
-	addr := os.Getenv("HTTP_ADDR")
-	if addr == "" {
-		addr = "127.0.0.1:8080"
+func Load() (*Config, error) {
+	_ = godotenv.Load()
+
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		return nil, fmt.Errorf("variable d'environnement DATABASE_URL manquante")
 	}
-	_, port, err := net.SplitHostPort(addr)
-	if err != nil {
-		return Config{}, fmt.Errorf("invalid HTTP_ADDR %q: %w", addr, err)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
-	n, err := strconv.Atoi(port)
-	if err != nil || n < 1 || n > 65535 {
-		return Config{}, fmt.Errorf("HTTP_ADDR port must be between 1 and 65535")
-	}
-	return Config{HTTPAddr: addr}, nil
+
+	return &Config{
+		DatabaseURL: dbURL,
+		Port:        port,
+	}, nil
 }
