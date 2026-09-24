@@ -33,7 +33,6 @@ type AgentResponse struct {
 	UpdatedAt      time.Time `json:"updated_at"`
 }
 
-// ToAgentResponse mappe un model.Agent vers un dto.AgentResponse
 func ToAgentResponse(a model.Agent) AgentResponse {
 	return AgentResponse{
 		ID:             a.ID,
@@ -58,4 +57,17 @@ func ToAgentResponseList(agents []model.Agent) []AgentResponse {
 		res[i] = ToAgentResponse(a)
 	}
 	return res
+}
+
+type ErrorResponse struct {
+	Error   string `json:"error" example:"Données invalides"`
+	Details string `json:"details,omitempty" example:"Le champ name est obligatoire"`
+}
+
+type SingleAgentResponse struct {
+	Data model.Agent `json:"data"`
+}
+
+type AgentListResponse struct {
+	Data []model.Agent `json:"data"`
 }
