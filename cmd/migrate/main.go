@@ -1,5 +1,5 @@
 package main
 
 func main() {
-    // Entry points for migrations
+	// Entry points for migrations
 }
