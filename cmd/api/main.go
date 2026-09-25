@@ -17,7 +17,7 @@ import (
 // @title           Marketplace API
 // @version         1.0
 // @description     API backend pour la marketplace Odin.
-// @host            localhost:8080
+// @host            localhost:8081
 // @BasePath        /api/v1
 func main() {
 	cfg, err := config.Load()

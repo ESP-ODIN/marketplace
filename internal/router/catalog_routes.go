@@ -12,6 +12,7 @@ func registerCatalogRoutes(rg *gin.RouterGroup, h *handler.AgentHandler) {
 		agents := catalog.Group("/agents")
 		{
 			agents.GET("", h.GetAll)
+			agents.GET("/:id", h.GetByID)
 			agents.POST("", h.Create)
 		}
 	}

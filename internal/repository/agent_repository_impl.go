@@ -2,9 +2,13 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"uuid"
 
 	"marketplace/internal/model"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -78,4 +82,34 @@ func (r *agentRepositoryImpl) Create(ctx context.Context, a *model.Agent) (*mode
 	}
 
 	return a, nil
+}
+
+func (r *agentRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
+	query := `
+		SELECT id, creator_id, name, description, readme_markdown, category, agent_type, runtime, created_at, updated_at
+		FROM agent
+		WHERE id = $1;
+	`
+
+	var a model.Agent
+	err := r.db.QueryRow(ctx, query, id).Scan(
+		&a.ID,
+		&a.CreatorID,
+		&a.Name,
+		&a.Description,
+		&a.ReadmeMarkdown,
+		&a.Category,
+		&a.AgentType,
+		&a.Runtime,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // non trouvé
+		}
+		return nil, fmt.Errorf("agentRepository.GetByID: %w", err)
+	}
+
+	return &a, nil
 }

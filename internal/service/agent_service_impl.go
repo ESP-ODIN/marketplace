@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"uuid"
 
 	"marketplace/internal/dto"
 	"marketplace/internal/model"
@@ -32,4 +33,8 @@ func (s *agentServiceImpl) CreateAgent(ctx context.Context, req dto.CreateAgentR
 	}
 
 	return s.repo.Create(ctx, agent)
+}
+
+func (s *agentServiceImpl) GetAgentByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
+	return s.repo.GetByID(ctx, id)
 }

@@ -76,14 +76,14 @@ definitions:
       updated_at:
         type: string
     type: object
-host: localhost:8080
+host: localhost:8081
 info:
   contact: {}
   description: API backend pour la marketplace Odin.
   title: Marketplace API
   version: "1.0"
 paths:
-  /agents:
+  /catalog/agents:
     get:
       description: Récupère la liste de tous les agents enregistrés
       produces:
@@ -99,7 +99,7 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
       summary: Lister les agents
       tags:
-      - agents
+      - catalog
     post:
       consumes:
       - application/json
@@ -128,5 +128,36 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
       summary: Créer un agent
       tags:
-      - agents
+      - catalog
+  /catalog/agents/{id}:
+    get:
+      description: Renvoie les détails d'un agent spécifique à partir de son UUID
+      parameters:
+      - description: UUID de l'agent
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.SingleAgentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Récupérer un agent par son ID
+      tags:
+      - catalog
 swagger: "2.0"
