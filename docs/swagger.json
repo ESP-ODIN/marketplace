@@ -6,17 +6,17 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "localhost:8081",
     "basePath": "/api/v1",
     "paths": {
-        "/agents": {
+        "/catalog/agents": {
             "get": {
                 "description": "Récupère la liste de tous les agents enregistrés",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "agents"
+                    "catalog"
                 ],
                 "summary": "Lister les agents",
                 "responses": {
@@ -43,7 +43,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "agents"
+                    "catalog"
                 ],
                 "summary": "Créer un agent",
                 "parameters": [
@@ -66,6 +66,53 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/catalog/agents/{id}": {
+            "get": {
+                "description": "Renvoie les détails d'un agent spécifique à partir de son UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "Récupérer un agent par son ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID de l'agent",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.SingleAgentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
