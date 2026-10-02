@@ -66,9 +66,7 @@ func (h *PackageHandler) GetByNameAndVersion(c *gin.Context) {
 			c.JSON(http.StatusNotFound, dto.CLIErrorResponse{
 				Code:    "PACKAGE_NOT_FOUND",
 				Message: "le package spécifié n'existe pas",
-				Details: map[string]any{
-					"name": name,
-				},
+				Details: map[string]any{"name": name},
 			})
 			return
 		}
@@ -77,10 +75,7 @@ func (h *PackageHandler) GetByNameAndVersion(c *gin.Context) {
 			c.JSON(http.StatusNotFound, dto.CLIErrorResponse{
 				Code:    "VERSION_NOT_FOUND",
 				Message: "la version demandée n'existe pas pour ce package",
-				Details: map[string]any{
-					"name":    name,
-					"version": version,
-				},
+				Details: map[string]any{"name": name, "version": version},
 			})
 			return
 		}
@@ -88,6 +83,15 @@ func (h *PackageHandler) GetByNameAndVersion(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, dto.CLIErrorResponse{
 			Code:    "INTERNAL_SERVER_ERROR",
 			Message: "erreur interne lors de la récupération du package",
+		})
+		return
+	}
+
+	// Garde-fou si le service renvoie nil sans renvoyer d'erreur explicite
+	if agent == nil || agentVer == nil {
+		c.JSON(http.StatusNotFound, dto.CLIErrorResponse{
+			Code:    "PACKAGE_NOT_FOUND",
+			Message: "package ou version introuvable",
 		})
 		return
 	}
