@@ -2,7 +2,8 @@ package service
 
 import (
 	"context"
-	"uuid"
+
+	"github.com/google/uuid"
 
 	"marketplace/internal/dto"
 	"marketplace/internal/model"
@@ -37,4 +38,27 @@ func (s *agentServiceImpl) CreateAgent(ctx context.Context, req dto.CreateAgentR
 
 func (s *agentServiceImpl) GetAgentByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
 	return s.repo.GetByID(ctx, id)
+}
+
+func (s *agentServiceImpl) GetPackageVersion(ctx context.Context, name, version string) (*model.Agent, *model.AgentVersion, error) {
+	agent, agentVer, err := s.repo.GetVersionByName(ctx, name, version)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// L'agent n'existe pas du tout
+	if agent == nil {
+		return nil, nil, ErrPackageNotFound
+	}
+
+	// L'agent existe mais aucune version correspondante
+	if agentVer == nil {
+		return nil, nil, ErrVersionNotFound
+	}
+
+	return agent, agentVer, nil
+}
+
+func (s *agentServiceImpl) SearchPackages(ctx context.Context, query string) ([]model.Agent, error) {
+	return s.repo.Search(ctx, query)
 }

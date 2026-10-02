@@ -7,6 +7,16 @@ definitions:
           $ref: '#/definitions/model.Agent'
         type: array
     type: object
+  dto.CLIErrorResponse:
+    properties:
+      code:
+        type: string
+      details:
+        additionalProperties: {}
+        type: object
+      message:
+        type: string
+    type: object
   dto.CreateAgentRequest:
     properties:
       agent_type:
@@ -44,6 +54,22 @@ definitions:
         example: Données invalides
         type: string
     type: object
+  dto.PackageDetailResponse:
+    properties:
+      agent:
+        $ref: '#/definitions/model.Agent'
+      version:
+        $ref: '#/definitions/model.AgentVersion'
+    type: object
+  dto.PackageSearchResponse:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.Agent'
+        type: array
+    type: object
   dto.SingleAgentResponse:
     properties:
       data:
@@ -74,6 +100,29 @@ definitions:
       runtime:
         type: string
       updated_at:
+        type: string
+    type: object
+  model.AgentVersion:
+    properties:
+      agent_id:
+        type: string
+      changelog:
+        type: string
+      id:
+        type: string
+      is_stable:
+        type: boolean
+      manifest_json:
+        type: string
+      published_at:
+        type: string
+      repo_link:
+        type: string
+      security_run_id:
+        type: string
+      sha256:
+        type: string
+      version:
         type: string
     type: object
 host: localhost:8081
@@ -160,4 +209,59 @@ paths:
       summary: Récupérer un agent par son ID
       tags:
       - catalog
+  /packages/{name}/{version}:
+    get:
+      description: Récupère les informations d'un package et sa version pour le CLI
+      parameters:
+      - description: Nom du package
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Version semver ou 'latest'
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PackageDetailResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.CLIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.CLIErrorResponse'
+      summary: Détail d'un package et sa version
+      tags:
+      - packages
+  /packages/search:
+    get:
+      description: Recherche un package par mot-clé (retourne une liste vide si aucun
+        mot-clé fourni)
+      parameters:
+      - description: Terme de recherche
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PackageSearchResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.CLIErrorResponse'
+      summary: Rechercher des packages
+      tags:
+      - packages
 swagger: "2.0"

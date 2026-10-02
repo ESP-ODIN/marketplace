@@ -125,6 +125,88 @@
                     }
                 }
             }
+        },
+        "/packages/search": {
+            "get": {
+                "description": "Recherche un package par mot-clé (retourne une liste vide si aucun mot-clé fourni)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "packages"
+                ],
+                "summary": "Rechercher des packages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Terme de recherche",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PackageSearchResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CLIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/packages/{name}/{version}": {
+            "get": {
+                "description": "Récupère les informations d'un package et sa version pour le CLI",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "packages"
+                ],
+                "summary": "Détail d'un package et sa version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Nom du package",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version semver ou 'latest'",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PackageDetailResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CLIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CLIErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -136,6 +218,21 @@
                     "items": {
                         "$ref": "#/definitions/model.Agent"
                     }
+                }
+            }
+        },
+        "dto.CLIErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "message": {
+                    "type": "string"
                 }
             }
         },
@@ -190,6 +287,31 @@
                 }
             }
         },
+        "dto.PackageDetailResponse": {
+            "type": "object",
+            "properties": {
+                "agent": {
+                    "$ref": "#/definitions/model.Agent"
+                },
+                "version": {
+                    "$ref": "#/definitions/model.AgentVersion"
+                }
+            }
+        },
+        "dto.PackageSearchResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Agent"
+                    }
+                }
+            }
+        },
         "dto.SingleAgentResponse": {
             "type": "object",
             "properties": {
@@ -235,6 +357,41 @@
                     "type": "string"
                 },
                 "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AgentVersion": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
+                    "type": "string"
+                },
+                "changelog": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_stable": {
+                    "type": "boolean"
+                },
+                "manifest_json": {
+                    "type": "string"
+                },
+                "published_at": {
+                    "type": "string"
+                },
+                "repo_link": {
+                    "type": "string"
+                },
+                "security_run_id": {
+                    "type": "string"
+                },
+                "sha256": {
+                    "type": "string"
+                },
+                "version": {
                     "type": "string"
                 }
             }

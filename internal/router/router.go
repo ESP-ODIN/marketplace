@@ -10,8 +10,9 @@ import (
 )
 
 type Config struct {
-	HealthHandler *handler.HealthHandler
-	AgentHandler  *handler.AgentHandler
+	HealthHandler  *handler.HealthHandler
+	AgentHandler   *handler.AgentHandler
+	PackageHandler *handler.PackageHandler
 }
 
 func Setup(cfg Config) *gin.Engine {
@@ -25,6 +26,7 @@ func Setup(cfg Config) *gin.Engine {
 	v1 := r.Group("/api/v1")
 	{
 		registerCatalogRoutes(v1, cfg.AgentHandler)
+		registerPackageRoutes(v1, cfg.PackageHandler)
 	}
 
 	return r
