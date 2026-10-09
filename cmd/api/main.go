@@ -38,8 +38,9 @@ func main() {
 	agentService := service.NewAgentService(agentRepo)
 
 	r := router.Setup(router.Config{
-		HealthHandler: handler.NewHealthHandler(pool),
-		AgentHandler:  handler.NewAgentHandler(agentService),
+		HealthHandler:  handler.NewHealthHandler(pool),
+		AgentHandler:   handler.NewAgentHandler(agentService),
+		PackageHandler: handler.NewPackageHandler(agentService),
 	})
 
 	addr := ":8080"
