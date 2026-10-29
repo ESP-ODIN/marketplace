@@ -1,4 +1,4 @@
-.PHONY: run build test vet fmt docker-build docker-dev
+.PHONY: run build test vet fmt docker-build docker-dev hooks
 
 -include .env
 
@@ -29,3 +29,7 @@ docker-dev:
 		-v "$(PWD)":/app \
 		-v /app/tmp \
 		marketplace-api
+
+# Active les hooks git du repo (lance les tests avant chaque push).
+hooks:
+	git config core.hooksPath .githooks

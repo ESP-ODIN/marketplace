@@ -61,3 +61,9 @@ Then check it with `curl http://127.0.0.1:8092/agent`. Editing any `.go` file re
 the server automatically inside the container. The container itself always listens on `0.0.0.0:8080`
 (overridden from `.env`'s `HTTP_ADDR` by the `docker-dev` target); only the host-side port, read from
 `PORT` in `.env`, changes.
+
+## CI pipeline
+
+Every push runs `go vet` and the unit tests on GitHub Actions, and a local
+`pre-push` hook blocks the push if any test fails. Enable the hook once with
+`make hooks`. See [docs/PIPELINE.md](docs/PIPELINE.md).
