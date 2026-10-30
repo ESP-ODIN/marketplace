@@ -209,9 +209,9 @@ paths:
       summary: Récupérer un agent par son ID
       tags:
       - catalog
-  /catalog/profiles/{id}:
+  /catalog/creators/{id}/agents:
     get:
-      description: Renvoie les agents publiés par ce créateur
+      description: Renvoie les agents enregistrés pour ce créateur
       parameters:
       - description: UUID du créateur
         in: path
@@ -229,11 +229,15 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
-      summary: Profil d'un créateur
+      summary: Agents d'un créateur
       tags:
       - catalog
   /packages/{name}/{version}:

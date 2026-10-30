@@ -46,6 +46,9 @@ func (r *agentRepositoryImpl) GetAll(ctx context.Context) ([]model.Agent, error)
 		}
 		agents = append(agents, a)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return agents, nil
 }
@@ -141,6 +144,9 @@ func (r *agentRepositoryImpl) ListByCreatorID(ctx context.Context, creatorID uui
 			return nil, fmt.Errorf("agentRepository.ListByCreatorID scan: %w", err)
 		}
 		agents = append(agents, a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("agentRepository.ListByCreatorID: %w", err)
 	}
 
 	return agents, nil

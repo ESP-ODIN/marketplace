@@ -125,15 +125,16 @@ func (h *AgentHandler) Create(c *gin.Context) {
 }
 
 // GetProfile godoc
-// @Summary      Profil d'un créateur
-// @Description  Renvoie les agents publiés par ce créateur
+// @Summary      Agents d'un créateur
+// @Description  Renvoie les agents enregistrés pour ce créateur
 // @Tags         catalog
 // @Produce      json
 // @Param        id   path      string  true  "UUID du créateur"
 // @Success      200  {object}  dto.AgentListResponse
 // @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
 // @Failure      500  {object}  dto.ErrorResponse
-// @Router       /catalog/profiles/{id} [get]
+// @Router       /catalog/creators/{id}/agents [get]
 func (h *AgentHandler) GetProfile(c *gin.Context) {
 	paramID := c.Param("id")
 	creatorID, err := uuid.Parse(paramID)
@@ -149,6 +150,13 @@ func (h *AgentHandler) GetProfile(c *gin.Context) {
 		log.Printf("ERROR [AgentHandler.GetProfile]: %v", err)
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error: "erreur interne lors de la récupération du profil",
+		})
+		return
+	}
+
+	if len(agents) == 0 {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Error: "créateur non trouvé",
 		})
 		return
 	}

@@ -65,6 +65,39 @@ func (m *mockAgentRepository) GetVersionByName(ctx context.Context, name, versio
 	return nil, nil, nil
 }
 
+func TestAgentService_GetProfile(t *testing.T) {
+	ctx := context.Background()
+	creatorID := uuid.New()
+
+	t.Run("Succès - liste déléguée au repo", func(t *testing.T) {
+		expected := []model.Agent{{ID: uuid.New(), Name: "odin-crawler", CreatorID: creatorID}}
+		repo := &mockAgentRepository{
+			listByCreatorIDFn: func(ctx context.Context, id uuid.UUID) ([]model.Agent, error) {
+				assert.Equal(t, creatorID, id)
+				return expected, nil
+			},
+		}
+
+		agents, err := service.NewAgentService(repo).GetProfile(ctx, creatorID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, agents)
+	})
+
+	t.Run("Erreur SQL propagée", func(t *testing.T) {
+		repo := &mockAgentRepository{
+			listByCreatorIDFn: func(ctx context.Context, id uuid.UUID) ([]model.Agent, error) {
+				return nil, errors.New("db error")
+			},
+		}
+
+		agents, err := service.NewAgentService(repo).GetProfile(ctx, creatorID)
+
+		assert.Error(t, err)
+		assert.Nil(t, agents)
+	})
+}
+
 func TestAgentService_SearchPackages(t *testing.T) {
 	ctx := context.Background()
 

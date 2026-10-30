@@ -22,6 +22,7 @@ import (
 type mockAgentService struct {
 	searchFn            func(ctx context.Context, query string) ([]model.Agent, error)
 	getPackageVersionFn func(ctx context.Context, name, version string) (*model.Agent, *model.AgentVersion, error)
+	getProfileFn        func(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error)
 }
 
 func (m *mockAgentService) GetAllAgents(ctx context.Context) ([]model.Agent, error) {
@@ -34,6 +35,9 @@ func (m *mockAgentService) GetAgentByID(ctx context.Context, id uuid.UUID) (*mod
 	return nil, nil
 }
 func (m *mockAgentService) GetProfile(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
+	if m.getProfileFn != nil {
+		return m.getProfileFn(ctx, creatorID)
+	}
 	return nil, nil
 }
 func (m *mockAgentService) SearchPackages(ctx context.Context, query string) ([]model.Agent, error) {

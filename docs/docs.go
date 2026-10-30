@@ -132,16 +132,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/catalog/profiles/{id}": {
+        "/catalog/creators/{id}/agents": {
             "get": {
-                "description": "Renvoie les agents publiés par ce créateur",
+                "description": "Renvoie les agents enregistrés pour ce créateur",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "catalog"
                 ],
-                "summary": "Profil d'un créateur",
+                "summary": "Agents d'un créateur",
                 "parameters": [
                     {
                         "type": "string",
@@ -160,6 +160,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
