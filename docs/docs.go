@@ -132,6 +132,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/catalog/creators/{id}/agents": {
+            "get": {
+                "description": "Renvoie les agents enregistrés pour ce créateur",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "catalog"
+                ],
+                "summary": "Agents d'un créateur",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UUID du créateur",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.AgentListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/packages/search": {
             "get": {
                 "description": "Recherche un package par mot-clé (retourne une liste vide si aucun mot-clé fourni)",

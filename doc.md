@@ -58,6 +58,7 @@ Le projet respecte les principes de la Clean Architecture / Standard Go Layout :
 | `GET` | `/api/v1/catalog/agents` | Liste tous les agents enregistrés | 200, 500 |
 | `GET` | `/api/v1/catalog/agents/{id}` | Détail d'un agent par son UUID | 200, 400, 404, 500 |
 | `POST` | `/api/v1/catalog/agents` | Crée un nouvel agent via son DTO | 201, 400, 500 |
+| `GET` | `/api/v1/catalog/creators/{id}/agents` | Agents enregistrés pour un créateur | 200, 400, 404, 500 |
 
 ### Registre de Packages CLI (`/api/v1/packages`)
 

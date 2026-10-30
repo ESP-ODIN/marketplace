@@ -18,6 +18,7 @@ type mockAgentRepository struct {
 	getAllFn           func(ctx context.Context) ([]model.Agent, error)
 	createFn           func(ctx context.Context, a *model.Agent) (*model.Agent, error)
 	getByIDFn          func(ctx context.Context, id uuid.UUID) (*model.Agent, error)
+	listByCreatorIDFn  func(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error)
 	searchFn           func(ctx context.Context, query string) ([]model.Agent, error)
 	getVersionByNameFn func(ctx context.Context, name, version string) (*model.Agent, *model.AgentVersion, error)
 }
@@ -43,6 +44,13 @@ func (m *mockAgentRepository) GetByID(ctx context.Context, id uuid.UUID) (*model
 	return nil, nil
 }
 
+func (m *mockAgentRepository) ListByCreatorID(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
+	if m.listByCreatorIDFn != nil {
+		return m.listByCreatorIDFn(ctx, creatorID)
+	}
+	return nil, nil
+}
+
 func (m *mockAgentRepository) Search(ctx context.Context, query string) ([]model.Agent, error) {
 	if m.searchFn != nil {
 		return m.searchFn(ctx, query)
@@ -55,6 +63,39 @@ func (m *mockAgentRepository) GetVersionByName(ctx context.Context, name, versio
 		return m.getVersionByNameFn(ctx, name, version)
 	}
 	return nil, nil, nil
+}
+
+func TestAgentService_GetProfile(t *testing.T) {
+	ctx := context.Background()
+	creatorID := uuid.New()
+
+	t.Run("Succès - liste déléguée au repo", func(t *testing.T) {
+		expected := []model.Agent{{ID: uuid.New(), Name: "odin-crawler", CreatorID: creatorID}}
+		repo := &mockAgentRepository{
+			listByCreatorIDFn: func(ctx context.Context, id uuid.UUID) ([]model.Agent, error) {
+				assert.Equal(t, creatorID, id)
+				return expected, nil
+			},
+		}
+
+		agents, err := service.NewAgentService(repo).GetProfile(ctx, creatorID)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expected, agents)
+	})
+
+	t.Run("Erreur SQL propagée", func(t *testing.T) {
+		repo := &mockAgentRepository{
+			listByCreatorIDFn: func(ctx context.Context, id uuid.UUID) ([]model.Agent, error) {
+				return nil, errors.New("db error")
+			},
+		}
+
+		agents, err := service.NewAgentService(repo).GetProfile(ctx, creatorID)
+
+		assert.Error(t, err)
+		assert.Nil(t, agents)
+	})
 }
 
 func TestAgentService_SearchPackages(t *testing.T) {

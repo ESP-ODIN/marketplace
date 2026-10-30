@@ -209,6 +209,37 @@ paths:
       summary: Récupérer un agent par son ID
       tags:
       - catalog
+  /catalog/creators/{id}/agents:
+    get:
+      description: Renvoie les agents enregistrés pour ce créateur
+      parameters:
+      - description: UUID du créateur
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.AgentListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Agents d'un créateur
+      tags:
+      - catalog
   /packages/{name}/{version}:
     get:
       description: Récupère les informations d'un package et sa version pour le CLI

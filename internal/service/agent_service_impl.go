@@ -40,6 +40,10 @@ func (s *agentServiceImpl) GetAgentByID(ctx context.Context, id uuid.UUID) (*mod
 	return s.repo.GetByID(ctx, id)
 }
 
+func (s *agentServiceImpl) GetProfile(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
+	return s.repo.ListByCreatorID(ctx, creatorID)
+}
+
 func (s *agentServiceImpl) GetPackageVersion(ctx context.Context, name, version string) (*model.Agent, *model.AgentVersion, error) {
 	agent, agentVer, err := s.repo.GetVersionByName(ctx, name, version)
 	if err != nil {
