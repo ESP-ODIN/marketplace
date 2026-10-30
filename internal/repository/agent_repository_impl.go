@@ -114,6 +114,38 @@ func (r *agentRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model
 	return &a, nil
 }
 
+func (r *agentRepositoryImpl) ListByCreatorID(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
+	query := `
+		SELECT id, name, creator_id, category, agent_type, runtime,
+		       description, readme_markdown, is_official_pick, downloads_count,
+		       created_at, updated_at
+		FROM agent
+		WHERE creator_id = $1
+		ORDER BY created_at DESC
+	`
+	rows, err := r.db.Query(ctx, query, creatorID)
+	if err != nil {
+		return nil, fmt.Errorf("agentRepository.ListByCreatorID: %w", err)
+	}
+	defer rows.Close()
+
+	agents := make([]model.Agent, 0)
+	for rows.Next() {
+		var a model.Agent
+		err := rows.Scan(
+			&a.ID, &a.Name, &a.CreatorID, &a.Category, &a.AgentType, &a.Runtime,
+			&a.Description, &a.ReadmeMarkdown, &a.IsOfficialPick, &a.DownloadsCount,
+			&a.CreatedAt, &a.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("agentRepository.ListByCreatorID scan: %w", err)
+		}
+		agents = append(agents, a)
+	}
+
+	return agents, nil
+}
+
 func (r *agentRepositoryImpl) Search(ctx context.Context, q string) ([]model.Agent, error) {
 	searchTerm := "%" + q + "%"
 	querySQL := `

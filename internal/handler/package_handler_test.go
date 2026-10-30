@@ -33,6 +33,9 @@ func (m *mockAgentService) CreateAgent(ctx context.Context, input dto.CreateAgen
 func (m *mockAgentService) GetAgentByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
 	return nil, nil
 }
+func (m *mockAgentService) GetProfile(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
+	return nil, nil
+}
 func (m *mockAgentService) SearchPackages(ctx context.Context, query string) ([]model.Agent, error) {
 	if m.searchFn != nil {
 		return m.searchFn(ctx, query)

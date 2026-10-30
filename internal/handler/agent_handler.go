@@ -123,3 +123,39 @@ func (h *AgentHandler) Create(c *gin.Context) {
 		"data": response,
 	})
 }
+
+// GetProfile godoc
+// @Summary      Profil d'un créateur
+// @Description  Renvoie les agents publiés par ce créateur
+// @Tags         catalog
+// @Produce      json
+// @Param        id   path      string  true  "UUID du créateur"
+// @Success      200  {object}  dto.AgentListResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      500  {object}  dto.ErrorResponse
+// @Router       /catalog/profiles/{id} [get]
+func (h *AgentHandler) GetProfile(c *gin.Context) {
+	paramID := c.Param("id")
+	creatorID, err := uuid.Parse(paramID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+			Error: "l'identifiant fourni n'est pas un UUID valide",
+		})
+		return
+	}
+
+	agents, err := h.agentService.GetProfile(c.Request.Context(), creatorID)
+	if err != nil {
+		log.Printf("ERROR [AgentHandler.GetProfile]: %v", err)
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error: "erreur interne lors de la récupération du profil",
+		})
+		return
+	}
+
+	response := dto.ToAgentResponseList(agents)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": response,
+	})
+}

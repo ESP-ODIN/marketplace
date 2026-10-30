@@ -18,6 +18,7 @@ type mockAgentRepository struct {
 	getAllFn           func(ctx context.Context) ([]model.Agent, error)
 	createFn           func(ctx context.Context, a *model.Agent) (*model.Agent, error)
 	getByIDFn          func(ctx context.Context, id uuid.UUID) (*model.Agent, error)
+	listByCreatorIDFn  func(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error)
 	searchFn           func(ctx context.Context, query string) ([]model.Agent, error)
 	getVersionByNameFn func(ctx context.Context, name, version string) (*model.Agent, *model.AgentVersion, error)
 }
@@ -39,6 +40,13 @@ func (m *mockAgentRepository) Create(ctx context.Context, a *model.Agent) (*mode
 func (m *mockAgentRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
 	if m.getByIDFn != nil {
 		return m.getByIDFn(ctx, id)
+	}
+	return nil, nil
+}
+
+func (m *mockAgentRepository) ListByCreatorID(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
+	if m.listByCreatorIDFn != nil {
+		return m.listByCreatorIDFn(ctx, creatorID)
 	}
 	return nil, nil
 }

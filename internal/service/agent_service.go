@@ -17,6 +17,7 @@ var (
 
 type AgentService interface {
 	GetAgentByID(ctx context.Context, id uuid.UUID) (*model.Agent, error)
+	GetProfile(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error)
 	GetAllAgents(ctx context.Context) ([]model.Agent, error)
 	CreateAgent(ctx context.Context, req dto.CreateAgentRequest) (*model.Agent, error)
 	SearchPackages(ctx context.Context, query string) ([]model.Agent, error)
