@@ -12,6 +12,35 @@ import (
 	"marketplace/internal/model"
 )
 
+const agentColumns = `
+	id, name, creator_id, category, agent_type, runtime,
+	description, readme_markdown, is_official_pick, downloads_count,
+	created_at, updated_at
+`
+
+type rowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanAgent(s rowScanner) (model.Agent, error) {
+	var a model.Agent
+	err := s.Scan(
+		&a.ID,
+		&a.Name,
+		&a.CreatorID,
+		&a.Category,
+		&a.AgentType,
+		&a.Runtime,
+		&a.Description,
+		&a.ReadmeMarkdown,
+		&a.IsOfficialPick,
+		&a.DownloadsCount,
+		&a.CreatedAt,
+		&a.UpdatedAt,
+	)
+	return a, err
+}
+
 type agentRepositoryImpl struct {
 	db *pgxpool.Pool
 }
@@ -21,12 +50,8 @@ func NewAgentRepository(db *pgxpool.Pool) AgentRepository {
 }
 
 func (r *agentRepositoryImpl) GetAll(ctx context.Context) ([]model.Agent, error) {
-	query := `
-		SELECT id, name, creator_id, category, agent_type, runtime, 
-		       description, readme_markdown, is_official_pick, downloads_count, 
-		       created_at, updated_at 
-		FROM agent
-	`
+	query := `SELECT ` + agentColumns + ` FROM agent`
+
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
 		return nil, err
@@ -35,12 +60,7 @@ func (r *agentRepositoryImpl) GetAll(ctx context.Context) ([]model.Agent, error)
 
 	var agents []model.Agent
 	for rows.Next() {
-		var a model.Agent
-		err := rows.Scan(
-			&a.ID, &a.Name, &a.CreatorID, &a.Category, &a.AgentType, &a.Runtime,
-			&a.Description, &a.ReadmeMarkdown, &a.IsOfficialPick, &a.DownloadsCount,
-			&a.CreatedAt, &a.UpdatedAt,
-		)
+		a, err := scanAgent(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -88,25 +108,9 @@ func (r *agentRepositoryImpl) Create(ctx context.Context, a *model.Agent) (*mode
 }
 
 func (r *agentRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
-	query := `
-		SELECT id, creator_id, name, description, readme_markdown, category, agent_type, runtime, created_at, updated_at
-		FROM agent
-		WHERE id = $1;
-	`
+	query := `SELECT ` + agentColumns + ` FROM agent WHERE id = $1;`
 
-	var a model.Agent
-	err := r.db.QueryRow(ctx, query, id).Scan(
-		&a.ID,
-		&a.CreatorID,
-		&a.Name,
-		&a.Description,
-		&a.ReadmeMarkdown,
-		&a.Category,
-		&a.AgentType,
-		&a.Runtime,
-		&a.CreatedAt,
-		&a.UpdatedAt,
-	)
+	a, err := scanAgent(r.db.QueryRow(ctx, query, id))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil
@@ -119,13 +123,12 @@ func (r *agentRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model
 
 func (r *agentRepositoryImpl) ListByCreatorID(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error) {
 	query := `
-		SELECT id, name, creator_id, category, agent_type, runtime,
-		       description, readme_markdown, is_official_pick, downloads_count,
-		       created_at, updated_at
+		SELECT ` + agentColumns + `
 		FROM agent
 		WHERE creator_id = $1
 		ORDER BY created_at DESC
 	`
+
 	rows, err := r.db.Query(ctx, query, creatorID)
 	if err != nil {
 		return nil, fmt.Errorf("agentRepository.ListByCreatorID: %w", err)
@@ -134,12 +137,7 @@ func (r *agentRepositoryImpl) ListByCreatorID(ctx context.Context, creatorID uui
 
 	agents := make([]model.Agent, 0)
 	for rows.Next() {
-		var a model.Agent
-		err := rows.Scan(
-			&a.ID, &a.Name, &a.CreatorID, &a.Category, &a.AgentType, &a.Runtime,
-			&a.Description, &a.ReadmeMarkdown, &a.IsOfficialPick, &a.DownloadsCount,
-			&a.CreatedAt, &a.UpdatedAt,
-		)
+		a, err := scanAgent(rows)
 		if err != nil {
 			return nil, fmt.Errorf("agentRepository.ListByCreatorID scan: %w", err)
 		}
@@ -155,9 +153,7 @@ func (r *agentRepositoryImpl) ListByCreatorID(ctx context.Context, creatorID uui
 func (r *agentRepositoryImpl) Search(ctx context.Context, q string) ([]model.Agent, error) {
 	searchTerm := "%" + q + "%"
 	querySQL := `
-		SELECT id, name, creator_id, category, agent_type, runtime, 
-		       description, readme_markdown, is_official_pick, downloads_count, 
-		       created_at, updated_at
+		SELECT ` + agentColumns + `
 		FROM agent
 		WHERE name ILIKE $1 OR description ILIKE $1
 		ORDER BY downloads_count DESC, created_at DESC;
@@ -171,25 +167,14 @@ func (r *agentRepositoryImpl) Search(ctx context.Context, q string) ([]model.Age
 
 	agents := make([]model.Agent, 0)
 	for rows.Next() {
-		var a model.Agent
-		err := rows.Scan(
-			&a.ID,
-			&a.Name,
-			&a.CreatorID,
-			&a.Category,
-			&a.AgentType,
-			&a.Runtime,
-			&a.Description,
-			&a.ReadmeMarkdown,
-			&a.IsOfficialPick,
-			&a.DownloadsCount,
-			&a.CreatedAt,
-			&a.UpdatedAt,
-		)
+		a, err := scanAgent(rows)
 		if err != nil {
 			return nil, fmt.Errorf("agentRepository.Search scan: %w", err)
 		}
 		agents = append(agents, a)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("agentRepository.Search: %w", err)
 	}
 
 	return agents, nil
@@ -197,17 +182,9 @@ func (r *agentRepositoryImpl) Search(ctx context.Context, q string) ([]model.Age
 
 func (r *agentRepositoryImpl) GetVersionByName(ctx context.Context, name string, version string) (*model.Agent, *model.AgentVersion, error) {
 	// 1. Vérifier si l'agent existe
-	agentQuery := `
-		SELECT id, creator_id, name, description, readme_markdown, category, agent_type, runtime, is_official_pick, downloads_count, created_at, updated_at
-		FROM agent
-		WHERE name = $1;
-	`
-	var a model.Agent
-	err := r.db.QueryRow(ctx, agentQuery, name).Scan(
-		&a.ID, &a.CreatorID, &a.Name, &a.Description, &a.ReadmeMarkdown,
-		&a.Category, &a.AgentType, &a.Runtime, &a.IsOfficialPick,
-		&a.DownloadsCount, &a.CreatedAt, &a.UpdatedAt,
-	)
+	agentQuery := `SELECT ` + agentColumns + ` FROM agent WHERE name = $1;`
+
+	a, err := scanAgent(r.db.QueryRow(ctx, agentQuery, name))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, nil, nil // Agent inconnu
