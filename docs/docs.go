@@ -269,8 +269,49 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Agent"
+                        "$ref": "#/definitions/dto.AgentResponse"
                     }
+                }
+            }
+        },
+        "dto.AgentResponse": {
+            "type": "object",
+            "properties": {
+                "agent_type": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "creator_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "downloads_count": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_official_pick": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "readme_markdown": {
+                    "type": "string"
+                },
+                "runtime": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -369,7 +410,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/model.Agent"
+                    "$ref": "#/definitions/dto.AgentResponse"
                 }
             }
         },

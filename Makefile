@@ -1,5 +1,4 @@
-.PHONY: run build test vet fmt docker-build docker-dev
-
+.PHONY: run build test vet fmt docker-build docker-dev swagger
 -include .env
 
 run:
@@ -29,3 +28,6 @@ docker-dev:
 		-v "$(PWD)":/app \
 		-v /app/tmp \
 		marketplace-api
+
+swagger:
+	swag init -g cmd/api/main.go

@@ -65,9 +65,9 @@ type ErrorResponse struct {
 }
 
 type SingleAgentResponse struct {
-	Data model.Agent `json:"data"`
+	Data AgentResponse `json:"data"`
 }
 
 type AgentListResponse struct {
-	Data []model.Agent `json:"data"`
+	Data []AgentResponse `json:"data"`
 }
