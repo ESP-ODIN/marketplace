@@ -50,7 +50,11 @@ func NewAgentRepository(db *pgxpool.Pool) AgentRepository {
 }
 
 func (r *agentRepositoryImpl) GetAll(ctx context.Context) ([]model.Agent, error) {
-	query := `SELECT ` + agentColumns + ` FROM agent`
+	query := `
+		SELECT ` + agentColumns + `
+		FROM agent
+		ORDER BY created_at DESC;
+	`
 
 	rows, err := r.db.Query(ctx, query)
 	if err != nil {
