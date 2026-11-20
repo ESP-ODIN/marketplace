@@ -25,8 +25,6 @@ definitions:
       category:
         maxLength: 255
         type: string
-      creator_id:
-        type: string
       description:
         type: string
       name:
@@ -41,7 +39,6 @@ definitions:
     required:
     - agent_type
     - category
-    - creator_id
     - name
     - runtime
     type: object
@@ -171,10 +168,16 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Créer un agent
       tags:
       - catalog
@@ -295,4 +298,10 @@ paths:
       summary: Rechercher des packages
       tags:
       - packages
+securityDefinitions:
+  BearerAuth:
+    description: 'Entrez votre jeton JWT au format : Bearer <token>'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

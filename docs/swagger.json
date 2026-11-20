@@ -35,6 +35,11 @@
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Enregistre un nouvel agent sur la marketplace",
                 "consumes": [
                     "application/json"
@@ -66,6 +71,12 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -288,7 +299,6 @@
             "required": [
                 "agent_type",
                 "category",
-                "creator_id",
                 "name",
                 "runtime"
             ],
@@ -300,9 +310,6 @@
                 "category": {
                     "type": "string",
                     "maxLength": 255
-                },
-                "creator_id": {
-                    "type": "string"
                 },
                 "description": {
                     "type": "string"
@@ -442,6 +449,14 @@
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Entrez votre jeton JWT au format : Bearer \u003ctoken\u003e",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }

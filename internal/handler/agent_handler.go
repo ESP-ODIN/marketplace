@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/ESP-ODIN/authkit-go"
 	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
@@ -92,14 +93,23 @@ func (h *AgentHandler) GetByID(c *gin.Context) {
 // @Tags         catalog
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        agent  body      dto.CreateAgentRequest  true  "Informations de l'agent"
 // @Success      201    {object}  dto.SingleAgentResponse
 // @Failure      400    {object}  dto.ErrorResponse
+// @Failure      401    {object}  dto.ErrorResponse
 // @Failure      500    {object}  dto.ErrorResponse
 // @Router       /catalog/agents [post]
 func (h *AgentHandler) Create(c *gin.Context) {
-	var req dto.CreateAgentRequest
+	identity, ok := authkit.IdentityFromContext(c.Request.Context())
+	if !ok || identity.ID == uuid.Nil {
+		c.JSON(http.StatusUnauthorized, dto.ErrorResponse{
+			Error: "utilisateur non authentifié",
+		})
+		return
+	}
 
+	var req dto.CreateAgentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error":   "Invalid request payload",
@@ -107,6 +117,8 @@ func (h *AgentHandler) Create(c *gin.Context) {
 		})
 		return
 	}
+
+	req.CreatorID = identity.ID
 
 	createdAgent, err := h.agentService.CreateAgent(c.Request.Context(), req)
 	if err != nil {
