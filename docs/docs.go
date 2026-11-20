@@ -41,6 +41,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Enregistre un nouvel agent sur la marketplace",
                 "consumes": [
                     "application/json"
@@ -72,6 +77,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -341,7 +352,6 @@ const docTemplate = `{
             "required": [
                 "agent_type",
                 "category",
-                "creator_id",
                 "name",
                 "runtime"
             ],
@@ -353,9 +363,6 @@ const docTemplate = `{
                 "category": {
                     "type": "string",
                     "maxLength": 255
-                },
-                "creator_id": {
-                    "type": "string"
                 },
                 "description": {
                     "type": "string"
@@ -495,6 +502,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Entrez votre jeton JWT au format : Bearer \u003ctoken\u003e",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

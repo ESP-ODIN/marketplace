@@ -8,8 +8,11 @@ import (
 )
 
 type Config struct {
-	DatabaseURL string
-	Port        string
+	DatabaseURL  string
+	Port         string
+	AuthJWKSURL  string
+	AuthIssuer   string
+	AuthAudience string
 }
 
 func Load() (*Config, error) {
@@ -25,8 +28,26 @@ func Load() (*Config, error) {
 		port = "8080"
 	}
 
+	jwksURL := os.Getenv("AUTH_JWKS_URL")
+	if jwksURL == "" {
+		return nil, fmt.Errorf("variable d'environnement AUTH_JWKS_URL manquante")
+	}
+
+	issuer := os.Getenv("AUTH_ISSUER")
+	if issuer == "" {
+		return nil, fmt.Errorf("variable d'environnement AUTH_ISSUER manquante")
+	}
+
+	audience := os.Getenv("AUTH_AUDIENCE")
+	if audience == "" {
+		audience = "odin-api"
+	}
+
 	return &Config{
-		DatabaseURL: dbURL,
-		Port:        port,
+		DatabaseURL:  dbURL,
+		Port:         port,
+		AuthJWKSURL:  jwksURL,
+		AuthIssuer:   issuer,
+		AuthAudience: audience,
 	}, nil
 }
