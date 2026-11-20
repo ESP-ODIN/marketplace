@@ -22,7 +22,7 @@ func NewAgentHandler(agentService service.AgentService) *AgentHandler {
 
 // GetAll godoc
 // @Summary      Lister les agents
-// @Description  Récupère la liste de tous les agents enregistrés
+// @Description  Récupère tous les agents enregistrés, du plus récent au plus ancien
 // @Tags         catalog
 // @Produce      json
 // @Success      200  {object}  dto.AgentListResponse

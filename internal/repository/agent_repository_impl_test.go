@@ -87,7 +87,7 @@ func TestAgentRepository_Integration(t *testing.T) {
 	repo := repository.NewAgentRepository(pool)
 
 	t.Run("Search", func(t *testing.T) {
-		agents, err := repo.Search(ctx, "")
+		agents, err := repo.Search(ctx, "a")
 		assert.NoError(t, err)
 		assert.NotNil(t, agents)
 	})

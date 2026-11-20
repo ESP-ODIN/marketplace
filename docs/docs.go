@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/catalog/agents": {
             "get": {
-                "description": "Récupère la liste de tous les agents enregistrés",
+                "description": "Récupère tous les agents enregistrés, du plus récent au plus ancien",
                 "produces": [
                     "application/json"
                 ],
