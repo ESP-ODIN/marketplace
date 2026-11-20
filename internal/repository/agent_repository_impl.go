@@ -58,7 +58,7 @@ func (r *agentRepositoryImpl) GetAll(ctx context.Context) ([]model.Agent, error)
 	}
 	defer rows.Close()
 
-	var agents []model.Agent
+	agents := make([]model.Agent, 0)
 	for rows.Next() {
 		a, err := scanAgent(rows)
 		if err != nil {
