@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"marketplace/internal/model"
@@ -105,7 +106,16 @@ func (r *agentRepositoryImpl) Create(ctx context.Context, a *model.Agent) (*mode
 	)
 
 	if err != nil {
-		return nil, err
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case "23505":
+				return nil, ErrAgentAlreadyExists
+			case "23503":
+				return nil, ErrCreatorNotFound
+			}
+		}
+		return nil, fmt.Errorf("agentRepository.Create: %w", err)
 	}
 
 	return a, nil
