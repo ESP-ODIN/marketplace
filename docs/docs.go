@@ -17,7 +17,7 @@ const docTemplate = `{
     "paths": {
         "/catalog/agents": {
             "get": {
-                "description": "Récupère la liste de tous les agents enregistrés",
+                "description": "Récupère tous les agents enregistrés, du plus récent au plus ancien",
                 "produces": [
                     "application/json"
                 ],
@@ -72,6 +72,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }

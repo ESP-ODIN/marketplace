@@ -63,6 +63,10 @@ func (s *agentServiceImpl) GetPackageVersion(ctx context.Context, name, version 
 	return agent, agentVer, nil
 }
 
+// SearchPackages renvoie une liste vide sans interroger la base si aucun mot-clé n'est fourni.
 func (s *agentServiceImpl) SearchPackages(ctx context.Context, query string) ([]model.Agent, error) {
+	if query == "" {
+		return []model.Agent{}, nil
+	}
 	return s.repo.Search(ctx, query)
 }

@@ -202,3 +202,22 @@ func TestAgentService_GetPackageVersion(t *testing.T) {
 		assert.Nil(t, ver)
 	})
 }
+
+func TestAgentService_SearchPackages_MotCleVide(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("Mot-clé vide - liste vide sans appel au repo", func(t *testing.T) {
+		repo := &mockAgentRepository{
+			searchFn: func(ctx context.Context, query string) ([]model.Agent, error) {
+				t.Fatal("le repository ne doit pas être appelé quand q est vide")
+				return nil, nil
+			},
+		}
+
+		agents, err := service.NewAgentService(repo).SearchPackages(ctx, "")
+
+		assert.NoError(t, err)
+		assert.NotNil(t, agents)
+		assert.Empty(t, agents)
+	})
+}

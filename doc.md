@@ -55,16 +55,16 @@ Le projet respecte les principes de la Clean Architecture / Standard Go Layout :
 
 | Méthode | Route | Description | Statuts HTTP |
 | --- | --- | --- | --- |
-| `GET` | `/api/v1/catalog/agents` | Liste tous les agents enregistrés | 200, 500 |
+| `GET` | `/api/v1/catalog/agents` | Liste tous les agents, du plus récent au plus ancien | 200, 500 |
 | `GET` | `/api/v1/catalog/agents/{id}` | Détail d'un agent par son UUID | 200, 400, 404, 500 |
-| `POST` | `/api/v1/catalog/agents` | Crée un nouvel agent via son DTO | 201, 400, 500 |
+| `POST` | `/api/v1/catalog/agents` | Crée un nouvel agent via son DTO (409 si le nom existe déjà, 400 si le créateur est inconnu) | 201, 400, 409, 500 |
 | `GET` | `/api/v1/catalog/creators/{id}/agents` | Agents enregistrés pour un créateur | 200, 400, 404, 500 |
 
 ### Registre de Packages CLI (`/api/v1/packages`)
 
 | Méthode | Route | Description | Statuts HTTP |
 | --- | --- | --- | --- |
-| `GET` | `/api/v1/packages/search?q=<query>` | Recherche insensible à la casse sur nom et description | 200, 500 |
+| `GET` | `/api/v1/packages/search?q=<query>` | Recherche insensible à la casse sur nom et description ; renvoie tous les résultats, ou une liste vide si rien ne correspond ou si `q` est vide | 200, 500 |
 | `GET` | `/api/v1/packages/{name}/{version}` | Métadonnées du package et de sa version (supporte `latest`) | 200, 404, 500 |
 
 ---

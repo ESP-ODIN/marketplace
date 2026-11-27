@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"marketplace/internal/dto"
+	"marketplace/internal/repository"
 	"marketplace/internal/service"
 )
 
@@ -22,7 +24,7 @@ func NewAgentHandler(agentService service.AgentService) *AgentHandler {
 
 // GetAll godoc
 // @Summary      Lister les agents
-// @Description  Récupère la liste de tous les agents enregistrés
+// @Description  Récupère tous les agents enregistrés, du plus récent au plus ancien
 // @Tags         catalog
 // @Produce      json
 // @Success      200  {object}  dto.AgentListResponse
@@ -96,6 +98,7 @@ func (h *AgentHandler) GetByID(c *gin.Context) {
 // @Param        agent  body      dto.CreateAgentRequest  true  "Informations de l'agent"
 // @Success      201    {object}  dto.SingleAgentResponse
 // @Failure      400    {object}  dto.ErrorResponse
+// @Failure      409    {object}  dto.ErrorResponse
 // @Failure      500    {object}  dto.ErrorResponse
 // @Router       /catalog/agents [post]
 func (h *AgentHandler) Create(c *gin.Context) {
@@ -103,14 +106,25 @@ func (h *AgentHandler) Create(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, dto.ErrorResponse{
-			Error:   "données invalides",
-			Details: err.Error(),
+			Error: "données invalides",
 		})
 		return
 	}
 
 	createdAgent, err := h.agentService.CreateAgent(c.Request.Context(), req)
 	if err != nil {
+		if errors.Is(err, repository.ErrAgentAlreadyExists) {
+			c.JSON(http.StatusConflict, dto.ErrorResponse{
+				Error: "un agent avec ce nom existe déjà",
+			})
+			return
+		}
+		if errors.Is(err, repository.ErrCreatorNotFound) {
+			c.JSON(http.StatusBadRequest, dto.ErrorResponse{
+				Error: "le créateur spécifié n'existe pas",
+			})
+			return
+		}
 		log.Printf("ERROR [AgentHandler.Create]: %v", err)
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
 			Error: "erreur interne lors de la création de l'agent",

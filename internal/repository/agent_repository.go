@@ -2,10 +2,18 @@ package repository
 
 import (
 	"context"
+	"errors"
 
 	"github.com/google/uuid"
 
 	"marketplace/internal/model"
+)
+
+var (
+	// ErrAgentAlreadyExists : un agent avec ce nom existe déjà (contrainte unique, code PostgreSQL 23505).
+	ErrAgentAlreadyExists = errors.New("agent already exists")
+	// ErrCreatorNotFound : le creator_id ne correspond à aucun profil (clé étrangère, code PostgreSQL 23503).
+	ErrCreatorNotFound = errors.New("creator not found")
 )
 
 type AgentRepository interface {

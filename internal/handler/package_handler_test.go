@@ -23,12 +23,16 @@ type mockAgentService struct {
 	searchFn            func(ctx context.Context, query string) ([]model.Agent, error)
 	getPackageVersionFn func(ctx context.Context, name, version string) (*model.Agent, *model.AgentVersion, error)
 	getProfileFn        func(ctx context.Context, creatorID uuid.UUID) ([]model.Agent, error)
+	createFn            func(ctx context.Context, input dto.CreateAgentRequest) (*model.Agent, error)
 }
 
 func (m *mockAgentService) GetAllAgents(ctx context.Context) ([]model.Agent, error) {
 	return nil, nil
 }
 func (m *mockAgentService) CreateAgent(ctx context.Context, input dto.CreateAgentRequest) (*model.Agent, error) {
+	if m.createFn != nil {
+		return m.createFn(ctx, input)
+	}
 	return nil, nil
 }
 func (m *mockAgentService) GetAgentByID(ctx context.Context, id uuid.UUID) (*model.Agent, error) {
