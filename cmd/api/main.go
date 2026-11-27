@@ -2,8 +2,14 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"marketplace/config"
@@ -20,17 +26,25 @@ import (
 // @host            localhost:8081
 // @BasePath        /api/v1
 func main() {
+	if err := run(); err != nil {
+		log.Fatalf("Erreur API : %v", err)
+	}
+}
+
+func run() error {
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Erreur de configuration : %v", err)
+		return fmt.Errorf("erreur de configuration : %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	connectCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	pool, err := db.Connect(ctx, cfg.DatabaseURL)
+	pool, err := db.Connect(connectCtx, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("Erreur de connexion : %v", err)
+		return fmt.Errorf("erreur de connexion : %w", err)
 	}
 	defer pool.Close()
 
@@ -43,13 +57,39 @@ func main() {
 		PackageHandler: handler.NewPackageHandler(agentService),
 	})
 
-	addr := ":8080"
-	if cfg.Port != "" {
-		addr = ":" + cfg.Port
-	}
+	addr := ":" + cfg.Port
 
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	listener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return fmt.Errorf("erreur serveur : %w", err)
+	}
+	serveErr := make(chan error, 1)
+	go func() { serveErr <- srv.Serve(listener) }()
 	fmt.Printf("🚀 Serveur démarré sur http://localhost%s\n", addr)
-	if err := r.Run(addr); err != nil {
-		log.Fatalf("Erreur serveur : %v", err)
+
+	select {
+	case err := <-serveErr:
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+		return fmt.Errorf("erreur serveur : %w", err)
+	case <-ctx.Done():
+		stop()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			_ = srv.Close()
+			return fmt.Errorf("erreur lors de l'arrêt du serveur : %w", err)
+		}
+		log.Print("Serveur arrêté")
+		return nil
 	}
 }

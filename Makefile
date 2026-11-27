@@ -1,5 +1,6 @@
 .PHONY: run build test vet fmt docker-build docker-dev swagger
 -include .env
+PORT ?= 8080
 
 run:
 	go run ./cmd/api
@@ -14,7 +15,7 @@ vet:
 	go vet ./...
 
 fmt:
-	gofmt -w cmd config db
+	gofmt -w .
 
 docker-build:
 	docker build -t marketplace-api .
@@ -24,8 +25,8 @@ docker-dev:
 	docker run --rm -it \
 		-p $(PORT):8080 \
 		--env-file .env \
-		-e HTTP_ADDR=0.0.0.0:8080 \
-		-v "$(PWD)":/app \
+		-e PORT=8080 \
+		-v "$(CURDIR)":/app \
 		-v /app/tmp \
 		marketplace-api
 

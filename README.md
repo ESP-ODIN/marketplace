@@ -1,63 +1,65 @@
-#agent
+# Marketplace API
+
+Go API for the Odin marketplace, using Gin for HTTP routing and PostgreSQL for storage.
 
 ## Prerequisites
-- **Go** (version 1.22 or later required for standard `net/http` method-based routing):
-  - **Linux (Ubuntu/Debian):**
-    ```bash
-    sudo apt update && sudo apt install -y golang-go
-    ```
-  - **Windows (PowerShell / Winget):**
-    ```powershell
-    winget install GoLang.Go
-    ```
-  - **macOS (Homebrew):**
-    ```bash
-    brew install go
-    ```
-- **VS Code** with the official **Go** extension (by *Go Team at Google*)
-- **Make** (optional, for running Makefile targets):
-  - **Windows (PowerShell / Winget):**
-    ```powershell
-    winget install GnuWin32.Make
-    ```
-    *(Alternatively via Chocolatey: `choco install make`)*
-  - **macOS:** Check with `make --version`. If missing, run:
-    ```bash
-    xcode-select --install
-    ```
-  - **Linux (Ubuntu/Debian):**
-    ```bash
-    sudo apt install -y make
-    ```
 
----
+- **Go 1.27.1 or later**, as specified in `go.mod`, for local development.
+- **PostgreSQL** accessible through `DATABASE_URL`, with the application schema initialized.
+- **Make** to use the provided development commands.
+- **Docker** with Linux containers for the Docker workflow. Go does not need to be installed on the host for this workflow.
 
-### Environment Setup
+## Environment setup
 
-1. At the root of the project, duplicate the example file to create your local `.env` file:
-   ```bash
-   cp .env.exemple .env
-   ```
+Copy the example configuration at the project root:
 
-## Docker
+```sh
+cp .env.exemple .env
+```
 
-A development `Dockerfile` runs the API with hot-reload (via [air](https://github.com/air-verse/air)),
-meant to be plugged as-is into the project's docker-compose.
+In PowerShell, use `Copy-Item .env.exemple .env`.
 
-Build the image:
+Set `DATABASE_URL` to your PostgreSQL connection URL. `PORT` controls the local HTTP port:
+the example sets it to `8081`, while the application defaults to `8080` when it is unset.
+
+## Local development
+
+```sh
+make run
+```
+
+With the example port, check liveness at `http://localhost:8081/health/live`, database readiness
+at `http://localhost:8081/health/ready`, and API documentation at `http://localhost:8081/swagger/index.html`.
+The agent catalog is available at `GET /api/v1/catalog/agents`.
+
+Use `make fmt` to format all Go source files, including `internal/`, `make test` to run tests,
+and `make vet` for static analysis.
+
+## Docker development
+
+The development image runs the API with Air for automatic rebuilds and restarts when Go files change.
+It runs as the non-root user `app` (UID/GID `10001`).
+
+Configure `.env` first, then build and start the container:
 
 ```sh
 make docker-build
-```
-
-Run it locally with hot-reload (mounts the source code and exposes the app on the host port set by
-`PORT` in `.env`, `8092` by default):
-
-```sh
 make docker-dev
 ```
 
-Then check it with `curl http://127.0.0.1:8092/agent`. Editing any `.go` file rebuilds and restarts
-the server automatically inside the container. The container itself always listens on `0.0.0.0:8080`
-(overridden from `.env`'s `HTTP_ADDR` by the `docker-dev` target); only the host-side port, read from
-`PORT` in `.env`, changes.
+The container always listens on port `8080`: `docker-dev` passes `-e PORT=8080`, overriding the
+value supplied by `--env-file .env`. The host port comes from `PORT` in `.env` (`8081` in the example,
+or `8080` if unset). With the example configuration, Docker publishes `8081:8080`.
+
+```sh
+curl http://localhost:8081/health/live
+curl http://localhost:8081/health/ready
+```
+
+The source directory is mounted at `/app`, and a separate volume stores build output in `/app/tmp`.
+On Linux, the mounted source must be readable by UID `10001` and its directories must be traversable.
+
+`DATABASE_URL` must be reachable from inside the container. With Docker Desktop, use
+`host.docker.internal` instead of `localhost` when PostgreSQL runs on the host. For PostgreSQL
+in another container, use its service name and connect both containers to the same Docker network.
+The `docker-dev` target does not create a database or join a custom network automatically.

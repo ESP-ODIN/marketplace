@@ -1,8 +1,10 @@
 .env
-env.*
+.env.*
 !.env.exemple
 .idea/
 bin/
+*.exe
+tmp/
 coverage.out
 *.test
 .DS_Store
