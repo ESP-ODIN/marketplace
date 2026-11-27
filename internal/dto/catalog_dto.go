@@ -10,7 +10,7 @@ import (
 
 type CreateAgentRequest struct {
 	Name           string    `json:"name" binding:"required,min=3,max=255"`
-	CreatorID      uuid.UUID `json:"creator_id" binding:"required"`
+	CreatorID      uuid.UUID `json:"-" swaggerignore:"true"`
 	Category       string    `json:"category" binding:"required,max=255"`
 	AgentType      string    `json:"agent_type" binding:"required,max=255"`
 	Runtime        string    `json:"runtime" binding:"required,max=255"`

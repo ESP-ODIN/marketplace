@@ -9,28 +9,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 
 	"marketplace/internal/dto"
-	"marketplace/internal/handler"
 	"marketplace/internal/model"
 	"marketplace/internal/repository"
-	"marketplace/internal/service"
 )
-
-func setupCreateRouter(svc service.AgentService) *gin.Engine {
-	gin.SetMode(gin.TestMode)
-	r := gin.New()
-	r.POST("/api/v1/catalog/agents", handler.NewAgentHandler(svc).Create)
-	return r
-}
 
 func TestAgentHandler_Create(t *testing.T) {
 	validBody := `{
 		"name": "odin-crawler",
-		"creator_id": "` + uuid.NewString() + `",
 		"category": "data",
 		"agent_type": "tool",
 		"runtime": "go"
@@ -57,10 +46,12 @@ func TestAgentHandler_Create(t *testing.T) {
 				},
 			}
 
+			r, signForUser := setupCatalogAuthRouter(t, mockSvc)
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/catalog/agents", strings.NewReader(tc.body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("Authorization", "Bearer "+signForUser(uuid.New()))
 			w := httptest.NewRecorder()
-			setupCreateRouter(mockSvc).ServeHTTP(w, req)
+			r.ServeHTTP(w, req)
 
 			assert.Equal(t, tc.wantStatus, w.Code)
 
@@ -72,21 +63,25 @@ func TestAgentHandler_Create(t *testing.T) {
 	}
 
 	t.Run("201 - agent créé", func(t *testing.T) {
+		userID := uuid.New()
 		mockSvc := &mockAgentService{
 			createFn: func(ctx context.Context, input dto.CreateAgentRequest) (*model.Agent, error) {
 				return &model.Agent{ID: uuid.New(), Name: input.Name, CreatorID: input.CreatorID}, nil
 			},
 		}
 
+		r, signForUser := setupCatalogAuthRouter(t, mockSvc)
 		req, _ := http.NewRequest(http.MethodPost, "/api/v1/catalog/agents", strings.NewReader(validBody))
 		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", "Bearer "+signForUser(userID))
 		w := httptest.NewRecorder()
-		setupCreateRouter(mockSvc).ServeHTTP(w, req)
+		r.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusCreated, w.Code)
 
 		var res dto.SingleAgentResponse
 		assert.NoError(t, json.Unmarshal(w.Body.Bytes(), &res))
 		assert.Equal(t, "odin-crawler", res.Data.Name)
+		assert.Equal(t, userID, res.Data.CreatorID)
 	})
 }

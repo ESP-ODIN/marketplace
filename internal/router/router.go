@@ -1,6 +1,7 @@
 package router
 
 import (
+	"github.com/ESP-ODIN/authkit-go"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -13,6 +14,7 @@ type Config struct {
 	HealthHandler  *handler.HealthHandler
 	AgentHandler   *handler.AgentHandler
 	PackageHandler *handler.PackageHandler
+	Authenticator  *authkit.Authenticator
 }
 
 func Setup(cfg Config) *gin.Engine {
@@ -25,7 +27,7 @@ func Setup(cfg Config) *gin.Engine {
 
 	v1 := r.Group("/api/v1")
 	{
-		registerCatalogRoutes(v1, cfg.AgentHandler)
+		registerCatalogRoutes(v1, cfg.AgentHandler, cfg.Authenticator)
 		registerPackageRoutes(v1, cfg.PackageHandler)
 	}
 

@@ -6,6 +6,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/ESP-ODIN/authkit-go"
+
 	"marketplace/config"
 	"marketplace/db"
 	"marketplace/internal/handler"
@@ -14,11 +16,15 @@ import (
 	"marketplace/internal/service"
 )
 
-// @title           Marketplace API
-// @version         1.0
-// @description     API backend pour la marketplace Odin.
-// @host            localhost:8081
-// @BasePath        /api/v1
+// @title                       Marketplace API
+// @version                     1.0
+// @description                 API backend pour la marketplace Odin.
+// @host                        localhost:8081
+// @BasePath                    /api/v1
+// @securityDefinitions.apikey  BearerAuth
+// @in                          header
+// @name                        Authorization
+// @description                 Entrez votre jeton JWT au format : Bearer <token>
 func main() {
 	cfg, err := config.Load()
 	if err != nil {
@@ -34,6 +40,15 @@ func main() {
 	}
 	defer pool.Close()
 
+	authenticator, err := authkit.New(authkit.Config{
+		JWKSURL:  cfg.AuthJWKSURL,
+		Issuer:   cfg.AuthIssuer,
+		Audience: cfg.AuthAudience,
+	})
+	if err != nil {
+		log.Fatalf("Erreur d'initialisation authkit : %v", err)
+	}
+
 	agentRepo := repository.NewAgentRepository(pool)
 	agentService := service.NewAgentService(agentRepo)
 
@@ -41,6 +56,7 @@ func main() {
 		HealthHandler:  handler.NewHealthHandler(pool),
 		AgentHandler:   handler.NewAgentHandler(agentService),
 		PackageHandler: handler.NewPackageHandler(agentService),
+		Authenticator:  authenticator,
 	})
 
 	addr := ":8080"
